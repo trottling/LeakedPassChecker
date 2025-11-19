@@ -1,2 +1,0 @@
-# LeakedPassChecker
-Пупупупу
