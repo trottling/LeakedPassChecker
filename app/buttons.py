@@ -3,12 +3,10 @@ import os
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
-from checker.checker import Checker, Checker_config
-from export.csv_ import export_to_csv
-# from export.excel import export_to_excel
-from export.json_ import export_to_json
+from openpyxl import Workbook
 
-from app.utils import get_rel_path, warn_user
+from app.checker import Checker, Checker_config
+from app.utils import _build_combined_headers, _iter_joined_rows, get_rel_path, warn_user
 
 
 def select_entrance_table(self):
@@ -58,7 +56,6 @@ def active_ui(self):
 def run_checker(self):
     entrance_table_path = self.ui.lineEdit_entrance.text()
     login_table_path = self.ui.lineEdit_login.text()
-    check_then_not_in_territory = self.ui.checkBox_territory.isChecked()
 
     if entrance_table_path == "":
         warn_user("Заполните все поля", "Путь к журналу проходной пустой")
@@ -84,9 +81,8 @@ def run_checker(self):
 
     checker = Checker(
         Checker_config(
-            login_table_path=login_table_path,
+            logins_table_path=login_table_path,
             entrance_table_path=entrance_table_path,
-            check_then_not_in_territory=check_then_not_in_territory
             )
         )
 
@@ -119,41 +115,39 @@ def on_error(error):
     warn_user("Ошибка проверки", str(error))
 
 
-def get_path(default_name, file_type):
-    file_path, _ = QFileDialog.getSaveFileName(None, "Сохранить файл как...", default_name, file_type)
-    return file_path if file_path else None
-
-
-def export_data(self, exporter, path):
+def export_result(self):
     if self.scan_result is None:
         warn_user("Нет результатов", "Нет результатов для выгрузки")
         return
 
+    file_path, _ = QFileDialog.getSaveFileName(None, "Сохранить файл как...", "result.xlsx", "Excel Files (*.xlsx *.xls);;Все файлы (*.*)")
+
+    if not file_path:
+        return
+
     try:
-        exporter(self.scan_result, path)
+        export_to_excel(self.scan_result, file_path)
     except Exception as e:
         warn_user("Ошибка экспорта", str(e))
 
 
-def export_json(self):
-    path = get_path("result.json", "JSON Files (*.json);;Все файлы (*.*)")
-    if path is None:
-        return
+def export_to_excel(result, path):
+    login_headers, entrance_headers, combined_headers = _build_combined_headers(result)
 
-    export_data(self, export_to_json, path)
+    wb = Workbook()
+    # убираем дефолтный лист
+    default_ws = wb.active
+    wb.remove(default_ws)
 
+    def fill_sheet(title, entries):
+        ws = wb.create_sheet(title)
+        ws.append(combined_headers)
+        for entry in entries:
+            for row in _iter_joined_rows(entry, login_headers, entrance_headers, combined_headers):
+                ws.append(row)
 
-def export_csv(self):
-    path = get_path("result.csv", "CSV Files (*.csv);;Все файлы (*.*)")
-    if path is None:
-        return
+    fill_sheet("Утечки", result.compromised)
+    fill_sheet("Нет совпадений", result.no_matches)
+    fill_sheet("Сопоставлено", result.matched)
 
-    export_data(self, export_to_csv, path)
-
-
-def export_excel(self):
-    path = get_path("result.xlsx", "Excel Files (*.xlsx *.xls);;Все файлы (*.*)")
-    if path is None:
-        return
-
-    # export_data(self, export_to_excel, path)
+    wb.save(path)

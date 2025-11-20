@@ -1,22 +1,42 @@
 from PyQt6.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 from openpyxl import load_workbook
 
+USER_FIELD = "User Display Name"  # колонка с отображаемым именем в логинах
+
+ENTRANCE_USER_FIELD = "ФИО"  # колонка с ФИО в приходах
+
 
 class Checker_config:
-    def __init__(self, logins_table_path: str, entrance_table_path: str, check_then_not_in_territory):
-        self.check_then_not_in_territory = check_then_not_in_territory
+    def __init__(self, logins_table_path: str, entrance_table_path: str):
         self.logins_table_path = logins_table_path
         self.entrance_table_path = entrance_table_path
 
 
 class CheckerResult:
-    def __init__(self, compromised, compromised_count, matched, matched_count, no_matches, no_matches_count):
+    """
+    compromised / matched / no_matches:
+        список элементов вида:
+        {
+            "user": str,
+            "logins_rows": [ {...из логинов...}, ... ],
+            "entrance_rows": [ {...из проходной...}, ... ],
+        }
+
+    login_headers / entrance_headers:
+        списки заголовков из исходных файлов
+    """
+
+    def __init__(self, compromised, matched, no_matches, login_headers, entrance_headers):
         self.compromised = compromised
-        self.compromised_count = compromised_count
         self.matched = matched
-        self.matched_count = matched_count
         self.no_matches = no_matches
-        self.no_matches_count = no_matches_count
+
+        self.compromised_count = len(compromised)
+        self.matched_count = len(matched)
+        self.no_matches_count = len(no_matches)
+
+        self.login_headers = login_headers
+        self.entrance_headers = entrance_headers
 
 
 class CheckerSignals(QObject):
@@ -43,44 +63,43 @@ class Checker(QRunnable):
             logins_ws = logins_wb.active
             entrance_ws = entrance_wb.active
 
-            # Логины: ищем строку с "User Display Name"
+            # ---------- Ищем заголовки ----------
+
             login_header_row_idx = None
             login_headers = None
-
             for i, row in enumerate(logins_ws.iter_rows(values_only=True), start=1):
                 if not row:
                     continue
-                if "User Display Name" in row:
+                # строка с "User Display Name" — это как раз заголовок (у тебя это 11-я строка)
+                if USER_FIELD in row:
                     login_header_row_idx = i
                     login_headers = list(row)
                     break
 
             if login_header_row_idx is None:
-                raise ValueError("Не найден заголовок 'User Display Name' в таблице логинов")
+                raise ValueError(f"Не найден заголовок '{USER_FIELD}' в таблице логинов")
 
-            # Проходная: ищем строку с "ФИО"
             entrance_header_row_idx = None
             entrance_headers = None
-
             for i, row in enumerate(entrance_ws.iter_rows(values_only=True), start=1):
                 if not row:
                     continue
-                if "ФИО" in row:
+                # строка с "ФИО" — заголовок (у тебя это 9-я строка)
+                if ENTRANCE_USER_FIELD in row:
                     entrance_header_row_idx = i
                     entrance_headers = list(row)
                     break
 
             if entrance_header_row_idx is None:
-                raise ValueError("Не найден заголовок 'ФИО' в таблице проходной")
+                raise ValueError(f"Не найден заголовок '{ENTRANCE_USER_FIELD}' в таблице проходной")
 
-            # Читаем строки в словари
+            # ---------- Читаем строки в словари ----------
 
             def rows_to_dicts(ws, headers, start_row):
                 records = []
                 for row in ws.iter_rows(values_only=True, min_row=start_row):
                     if not row:
                         continue
-                    # Приводим длину к длине headers (на случай пустых хвостов)
                     row = list(row)
                     if len(row) < len(headers):
                         row += [None] * (len(headers) - len(row))
@@ -91,7 +110,7 @@ class Checker(QRunnable):
             logins_records = rows_to_dicts(
                 logins_ws,
                 login_headers,
-                login_header_row_idx + 1,
+                login_header_row_idx + 1,  # строки после заголовка
                 )
             entrance_records = rows_to_dicts(
                 entrance_ws,
@@ -99,11 +118,11 @@ class Checker(QRunnable):
                 entrance_header_row_idx + 1,
                 )
 
-            # Группировка по имени
+            # ---------- Группируем по пользователю ----------
 
             logins_by_user = { }
             for rec in logins_records:
-                name = rec.get("User Display Name")
+                name = rec.get(USER_FIELD)
                 if not name:
                     continue
                 key = str(name).strip()
@@ -111,7 +130,7 @@ class Checker(QRunnable):
 
             entrance_by_user = { }
             for rec in entrance_records:
-                fio = rec.get("ФИО")
+                fio = rec.get(ENTRANCE_USER_FIELD)
                 if not fio:
                     continue
                 key = str(fio).strip()
@@ -120,18 +139,18 @@ class Checker(QRunnable):
             logins_users = set(logins_by_user.keys())
             entrance_users = set(entrance_by_user.keys())
 
-            compromised_users = sorted(logins_users - entrance_users)
-            matched_users = sorted(logins_users & entrance_users)
-            no_match_users = sorted(entrance_users - logins_users)
+            # ---------- Логика: просто по наличию в таблицах ----------
 
-            # Формируем результат
+            compromised_users = sorted(logins_users - entrance_users)  # есть логин, нет проходной
+            matched_users = sorted(logins_users & entrance_users)  # есть и там, и там
+            no_match_users = sorted(entrance_users - logins_users)  # есть проходная, нет логина
 
             compromised = []
             for user in compromised_users:
                 compromised.append({
                     "user": user,
                     "logins_rows": logins_by_user.get(user, []),
-                    "entrance_rows": [],  # нет записей на проходной
+                    "entrance_rows": [],
                     })
 
             matched = []
@@ -150,7 +169,15 @@ class Checker(QRunnable):
                     "entrance_rows": entrance_by_user.get(user, []),
                     })
 
-            self.signals.result.emit(CheckerResult(compromised, len(compromised_users), matched, len(matched_users), no_matches, len(no_match_users)))
+            result = CheckerResult(
+                compromised=compromised,
+                matched=matched,
+                no_matches=no_matches,
+                login_headers=login_headers,
+                entrance_headers=entrance_headers,
+                )
+
+            self.signals.result.emit(result)
 
         except Exception as e:
             self.signals.error.emit(str(e))
