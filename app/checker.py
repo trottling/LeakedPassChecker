@@ -30,6 +30,7 @@ class CheckerResult:
         self.compromised_count = len(compromised)
         self.matched_count = len(matched)
         self.no_matches_count = len(no_matches)
+        self.total_count = (self.compromised_count + self.matched_count + self.no_matches_count)
 
         self.login_headers = login_headers
         self.entrance_headers = entrance_headers

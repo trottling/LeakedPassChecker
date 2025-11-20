@@ -91,13 +91,14 @@ def run_checker(self):
 def on_result(self, result):
     self.scan_result = result
 
-    html = f"""
-        <p style="font-size:14pt; font-weight:600;">
-            <span style="color:#cc0000;">Утечек: {self.scan_result.compromised_count}</span><br>
-            <span style="color:#ffaa00;">Нет совпадений: {self.scan_result.no_matches_count}</span><br>
-            <span style="color:#00c500;">Сопоставлено: {self.scan_result.matched_count}</span>
-        </p>
-        """
+    html = f"""<html><head><meta name="qrichtext" content="1" /><style type="text/css">
+    p, li {{ white-space: pre-wrap; }}
+    </style></head><body style=" font-family:'Segoe UI'; font-size:14pt; font-weight:600; font-style:normal;">
+    <p style=" color:#cc0000; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Утечек: {self.scan_result.compromised_count}</p>
+    <p align="justify" style=" color:#ffaa00; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Нет совпадений: {self.scan_result.no_matches_count}</p>
+    <p align="justify" style=" color:#00c500; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Сопоставлено: {self.scan_result.matched_count}</p>
+    <p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Всего: {self.scan_result.total_count}</p></body></html>
+    """
 
     self.ui.label_stats.setTextFormat(Qt.TextFormat.RichText)
     self.ui.label_stats.setText(html)
