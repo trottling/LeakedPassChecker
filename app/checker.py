@@ -60,14 +60,14 @@ class Checker(QRunnable):
             logins_ws = logins_wb.active
             entrance_ws = entrance_wb.active
 
-            # ---------- Ищем заголовки ----------
+            # Ищем заголовки
 
             login_header_row_idx = None
             login_headers = None
             for i, row in enumerate(logins_ws.iter_rows(values_only=True), start=1):
                 if not row:
                     continue
-                # строка с "User Display Name" — это как раз заголовок (у тебя это 11-я строка)
+
                 if "User Display Name" in row:
                     login_header_row_idx = i
                     login_headers = list(row)
@@ -81,7 +81,7 @@ class Checker(QRunnable):
             for i, row in enumerate(entrance_ws.iter_rows(values_only=True), start=1):
                 if not row:
                     continue
-                # строка с "ФИО" — заголовок (у тебя это 9-я строка)
+
                 if "ФИО" in row:
                     entrance_header_row_idx = i
                     entrance_headers = list(row)
@@ -90,7 +90,7 @@ class Checker(QRunnable):
             if entrance_header_row_idx is None:
                 raise ValueError(f"Не найден заголовок 'ФИО' в таблице проходной")
 
-            # ---------- Читаем строки в словари ----------
+            # Читаем строки в словари
 
             def rows_to_dicts(ws, headers, start_row):
                 records = []
@@ -115,7 +115,7 @@ class Checker(QRunnable):
                 entrance_header_row_idx + 1,
                 )
 
-            # ---------- Группируем по пользователю ----------
+            # Группируем по пользователю
 
             logins_by_user = { }
             for rec in logins_records:
@@ -136,7 +136,7 @@ class Checker(QRunnable):
             logins_users = set(logins_by_user.keys())
             entrance_users = set(entrance_by_user.keys())
 
-            # ---------- Логика: просто по наличию в таблицах ----------
+            # Логика: просто по наличию в таблицах
 
             compromised_users = sorted(logins_users - entrance_users)  # есть логин, нет проходной
             matched_users = sorted(logins_users & entrance_users)  # есть и там, и там

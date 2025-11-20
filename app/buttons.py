@@ -4,6 +4,7 @@ from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 from app.checker import Checker, Checker_config
 from app.utils import _build_combined_headers, _iter_joined_rows, get_rel_path, warn_user
@@ -140,6 +141,12 @@ def export_to_excel(result, path):
     def fill_sheet(title, entries):
         ws = wb.create_sheet(title)
         ws.append(combined_headers)
+
+        # ставим ширину столбцов
+        for col_idx, header in enumerate(combined_headers, start=1):
+            col_letter = get_column_letter(col_idx)
+            ws.column_dimensions[col_letter].width = max(15, len(str(header)) + 2)
+
         for entry in entries:
             for row in _iter_joined_rows(entry, login_headers, entrance_headers, combined_headers):
                 ws.append(row)
