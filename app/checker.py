@@ -22,15 +22,15 @@ class CheckerResult:
         списки заголовков из исходных файлов
     """
 
-    def __init__(self, compromised, matched, no_matches, login_headers, entrance_headers):
+    def __init__(self, compromised, matched, no_login, login_headers, entrance_headers):
         self.compromised = compromised
         self.matched = matched
-        self.no_matches = no_matches
+        self.no_login = no_login
 
         self.compromised_count = len(compromised)
         self.matched_count = len(matched)
-        self.no_matches_count = len(no_matches)
-        self.total_count = (self.compromised_count + self.matched_count + self.no_matches_count)
+        self.no_login_count = len(no_login)
+        self.total_count = (self.compromised_count + self.no_login_count + self.matched_count)
 
         self.login_headers = login_headers
         self.entrance_headers = entrance_headers
@@ -158,9 +158,9 @@ class Checker(QRunnable):
                     "entrance_rows": entrance_by_user.get(user, []),
                     })
 
-            no_matches = []
+            no_login = []
             for user in no_match_users:
-                no_matches.append({
+                no_login.append({
                     "user": user,
                     "logins_rows": [],
                     "entrance_rows": entrance_by_user.get(user, []),
@@ -169,7 +169,7 @@ class Checker(QRunnable):
             result = CheckerResult(
                 compromised=compromised,
                 matched=matched,
-                no_matches=no_matches,
+                no_login=no_login,
                 login_headers=login_headers,
                 entrance_headers=entrance_headers,
                 )

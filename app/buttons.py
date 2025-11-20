@@ -96,7 +96,7 @@ def on_result(self, result):
     p, li {{ white-space: pre-wrap; }}
     </style></head><body style=" font-family:'Segoe UI'; font-size:14pt; font-weight:600; font-style:normal;">
     <p style=" color:#cc0000; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Утечек: {self.scan_result.compromised_count}</p>
-    <p align="justify" style=" color:#ffaa00; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Нет совпадений: {self.scan_result.no_matches_count}</p>
+    <p align="justify" style=" color:#ffaa00; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Нет входа: {self.scan_result.no_login_count}</p>
     <p align="justify" style=" color:#00c500; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Сопоставлено: {self.scan_result.matched_count}</p>
     <p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Всего: {self.scan_result.total_count}</p></body></html>
     """
@@ -152,7 +152,7 @@ def export_to_excel(result, path):
                 ws.append(row)
 
     fill_sheet("Утечки", result.compromised)
-    fill_sheet("Нет совпадений", result.no_matches)
+    fill_sheet("Нет входа", result.no_login)
     fill_sheet("Сопоставлено", result.matched)
 
     wb.save(path)
