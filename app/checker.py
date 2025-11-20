@@ -1,10 +1,6 @@
 from PyQt6.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 from openpyxl import load_workbook
 
-USER_FIELD = "User Display Name"  # колонка с отображаемым именем в логинах
-
-ENTRANCE_USER_FIELD = "ФИО"  # колонка с ФИО в приходах
-
 
 class Checker_config:
     def __init__(self, logins_table_path: str, entrance_table_path: str):
@@ -71,13 +67,13 @@ class Checker(QRunnable):
                 if not row:
                     continue
                 # строка с "User Display Name" — это как раз заголовок (у тебя это 11-я строка)
-                if USER_FIELD in row:
+                if "User Display Name" in row:
                     login_header_row_idx = i
                     login_headers = list(row)
                     break
 
             if login_header_row_idx is None:
-                raise ValueError(f"Не найден заголовок '{USER_FIELD}' в таблице логинов")
+                raise ValueError(f"Не найден заголовок 'User Display Name' в таблице логинов")
 
             entrance_header_row_idx = None
             entrance_headers = None
@@ -85,13 +81,13 @@ class Checker(QRunnable):
                 if not row:
                     continue
                 # строка с "ФИО" — заголовок (у тебя это 9-я строка)
-                if ENTRANCE_USER_FIELD in row:
+                if "ФИО" in row:
                     entrance_header_row_idx = i
                     entrance_headers = list(row)
                     break
 
             if entrance_header_row_idx is None:
-                raise ValueError(f"Не найден заголовок '{ENTRANCE_USER_FIELD}' в таблице проходной")
+                raise ValueError(f"Не найден заголовок 'ФИО' в таблице проходной")
 
             # ---------- Читаем строки в словари ----------
 
@@ -122,7 +118,7 @@ class Checker(QRunnable):
 
             logins_by_user = { }
             for rec in logins_records:
-                name = rec.get(USER_FIELD)
+                name = rec.get("User Display Name")
                 if not name:
                     continue
                 key = str(name).strip()
@@ -130,7 +126,7 @@ class Checker(QRunnable):
 
             entrance_by_user = { }
             for rec in entrance_records:
-                fio = rec.get(ENTRANCE_USER_FIELD)
+                fio = rec.get("ФИО")
                 if not fio:
                     continue
                 key = str(fio).strip()

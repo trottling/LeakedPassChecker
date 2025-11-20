@@ -38,9 +38,7 @@ def inactive_ui(self):
     self.ui.pushButton_run.setEnabled(False)
     self.ui.pushButton_run.setIcon(QtGui.QIcon(get_rel_path('loading.png')))
     self.ui.pushButton_run.setIconSize(QtCore.QSize(25, 25))
-    self.ui.pushButton_export_excel.setEnabled(False)
-    self.ui.pushButton_export_csv.setEnabled(False)
-    self.ui.pushButton_export_json.setEnabled(False)
+    self.ui.pushButton_export.setEnabled(False)
 
 
 def active_ui(self):
@@ -48,9 +46,7 @@ def active_ui(self):
     self.ui.pushButton_run.setEnabled(True)
     self.ui.pushButton_run.setIcon(QtGui.QIcon(get_rel_path('start.png')))
     self.ui.pushButton_run.setIconSize(QtCore.QSize(25, 25))
-    self.ui.pushButton_export_excel.setEnabled(True)
-    self.ui.pushButton_export_csv.setEnabled(True)
-    self.ui.pushButton_export_json.setEnabled(True)
+    self.ui.pushButton_export.setEnabled(True)
 
 
 def run_checker(self):
@@ -88,7 +84,7 @@ def run_checker(self):
 
     checker.signals.result.connect(lambda result: on_result(self, result))
     checker.signals.finished.connect(lambda: on_finished(self))
-    checker.signals.error.connect(lambda e: on_error(e))
+    checker.signals.error.connect(lambda e: on_error(self, e))
     QtCore.QThreadPool.globalInstance().start(checker)
 
 
@@ -111,7 +107,8 @@ def on_finished(self):
     active_ui(self)
 
 
-def on_error(error):
+def on_error(self, error):
+    self.scan_result = None
     warn_user("Ошибка проверки", str(error))
 
 
@@ -135,9 +132,9 @@ def export_to_excel(result, path):
     login_headers, entrance_headers, combined_headers = _build_combined_headers(result)
 
     wb = Workbook()
+
     # убираем дефолтный лист
-    default_ws = wb.active
-    wb.remove(default_ws)
+    wb.remove(wb.active)
 
     def fill_sheet(title, entries):
         ws = wb.create_sheet(title)
