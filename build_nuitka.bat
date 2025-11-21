@@ -4,7 +4,6 @@ setlocal
 cd /d "%~dp0"
 
 set PYTHON=.venv\Scripts\python.exe
-if not exist "%PYTHON%" set PYTHON=python
 
 REM Проверка зависимостей
 "%PYTHON%" -m pip install -r requirements.txt
@@ -19,6 +18,7 @@ REM Сборка через Nuitka
   --onefile ^
   --enable-plugin=pyqt6 ^
   --output-dir=dist ^
+  --python-for-scons="%PYTHON%" ^
   --windows-icon-from-ico="assets\icon.ico" ^
   --include-data-file="assets\excel.png=excel.png" ^
   --include-data-file="assets\file.png=file.png" ^

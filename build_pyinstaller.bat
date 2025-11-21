@@ -4,7 +4,6 @@ setlocal
 cd /d "%~dp0"
 
 set PYTHON=.venv\Scripts\python.exe
-if not exist "%PYTHON%" set PYTHON=python
 
 REM Проверка зависимостей
 "%PYTHON%" -m pip install -r requirements.txt
@@ -17,6 +16,7 @@ del /q main.spec 2>nul
 REM Сборка через PyInstaller
 "%PYTHON%" -m PyInstaller ^
   --noconfirm ^
+  --noconsole ^
   --clean ^
   --name "LeakChecker" ^
   --onedir ^
