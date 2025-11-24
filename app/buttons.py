@@ -18,7 +18,7 @@ def select_entrance_table(self):
     except:
         return
 
-    self.ui.lineEdit_entrance.setText(file_path)
+    self.ui.lineEdit_entrances.setText(file_path)
 
 
 def select_login_table(self):
@@ -30,7 +30,7 @@ def select_login_table(self):
     except:
         return
 
-    self.ui.lineEdit_login.setText(file_path)
+    self.ui.lineEdit_logins.setText(file_path)
 
 
 def select_fired_list(self):
@@ -58,24 +58,24 @@ def select_exception_table(self):
 
 
 def inactive_ui(self):
-    self.ui.pushButton_run.setText("Проверка")
-    self.ui.pushButton_run.setEnabled(False)
-    self.ui.pushButton_run.setIcon(QtGui.QIcon(get_rel_path('loading.png')))
-    self.ui.pushButton_run.setIconSize(QtCore.QSize(25, 25))
-    self.ui.pushButton_export.setEnabled(False)
+    self.ui.pushButton_check.setText("Проверка")
+    self.ui.pushButton_check.setEnabled(False)
+    self.ui.pushButton_check.setIcon(QtGui.QIcon(get_rel_path('loading.png')))
+    self.ui.pushButton_check.setIconSize(QtCore.QSize(25, 25))
+    self.ui.pushButton_save.setEnabled(False)
 
 
 def active_ui(self):
-    self.ui.pushButton_run.setText("Начать поиск")
-    self.ui.pushButton_run.setEnabled(True)
-    self.ui.pushButton_run.setIcon(QtGui.QIcon(get_rel_path('start.png')))
-    self.ui.pushButton_run.setIconSize(QtCore.QSize(25, 25))
-    self.ui.pushButton_export.setEnabled(True)
+    self.ui.pushButton_check.setText("Начать поиск")
+    self.ui.pushButton_check.setEnabled(True)
+    self.ui.pushButton_check.setIcon(QtGui.QIcon(get_rel_path('start.png')))
+    self.ui.pushButton_check.setIconSize(QtCore.QSize(25, 25))
+    self.ui.pushButton_save.setEnabled(True)
 
 
 def run_checker(self):
-    entrances_table_path = self.ui.lineEdit_entrance.text()
-    logins_table_path = self.ui.lineEdit_login.text()
+    entrances_table_path = self.ui.lineEdit_entrances.text()
+    logins_table_path = self.ui.lineEdit_logins.text()
     exceptions_table_path = self.ui.lineEdit_exceptions.text()
     fired_list_path = self.ui.lineEdit_fireds.text()
 
