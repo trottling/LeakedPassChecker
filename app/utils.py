@@ -8,7 +8,7 @@ def get_rel_path(data_path, slash_replace=True):
     if getattr(sys, 'frozen', False):
         try:
             base_path = sys._MEIPASS
-        except Exception as e:
+        except Exception:
             return ""
     else:
         data_path = f"..\\assets\\{data_path}"
