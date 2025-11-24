@@ -74,10 +74,10 @@ def active_ui(self):
 
 
 def run_checker(self):
-    entrances_table_path = self.ui.lineEdit_entrances.text()
-    logins_table_path = self.ui.lineEdit_logins.text()
-    exceptions_table_path = self.ui.lineEdit_exceptions.text()
-    fired_list_path = self.ui.lineEdit_fireds.text()
+    entrances_table_path = self.ui.lineEdit_entrances.text().strip()
+    logins_table_path = self.ui.lineEdit_logins.text().strip()
+    exceptions_table_path = self.ui.lineEdit_exceptions.text().strip()
+    fired_list_path = self.ui.lineEdit_fireds.text().strip()
 
     if entrances_table_path == "":
         warn_user("Заполните все поля", "Путь к журналу проходной пустой")
@@ -99,11 +99,11 @@ def run_checker(self):
         warn_user("Файл не найден", "Неправильный путь к журналу входов в систему")
         return
 
-    if not os.path.isfile(exceptions_table_path):
+    if exceptions_table_path != "" and not os.path.isfile(exceptions_table_path):
         warn_user("Файл не найден", "Неправильный путь к таблице исключений")
         return
 
-    if not os.path.isfile(fired_list_path):
+    if fired_list_path != "" and not os.path.isfile(fired_list_path):
         warn_user("Файл не найден", "Неправильный путь к списку уволенных")
         return
 
@@ -112,7 +112,9 @@ def run_checker(self):
     checker = Checker(
         Checker_config(
             logins_table_path=logins_table_path,
-            entrance_table_path=entrances_table_path,
+            entrances_table_path=entrances_table_path,
+            exceptions_table_path=exceptions_table_path,
+            fired_list_path=fired_list_path
             )
         )
 

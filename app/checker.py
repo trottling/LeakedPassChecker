@@ -3,9 +3,11 @@ from openpyxl import load_workbook
 
 
 class Checker_config:
-    def __init__(self, logins_table_path: str, entrance_table_path: str):
+    def __init__(self, logins_table_path: str, entrances_table_path: str, exceptions_table_path: str, fired_list_path: str):
         self.logins_table_path = logins_table_path
-        self.entrance_table_path = entrance_table_path
+        self.entrances_table_path = entrances_table_path
+        self.exceptions_table_path = exceptions_table_path
+        self.fired_list_path = fired_list_path
 
 
 class CheckerResult:
@@ -55,7 +57,7 @@ class Checker(QRunnable):
     def run(self):
         try:
             logins_wb = load_workbook(self.config.logins_table_path, data_only=True)
-            entrance_wb = load_workbook(self.config.entrance_table_path, data_only=True)
+            entrance_wb = load_workbook(self.config.entrances_table_path, data_only=True)
 
             logins_ws = logins_wb.active
             entrance_ws = entrance_wb.active
