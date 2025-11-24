@@ -127,20 +127,20 @@ def run_checker(self):
 def on_result(self, result):
     self.scan_result = result
 
-    self.ui.label_stats_leak.setText(f"Утечек: {self.scan_result.compromised_count}")
-    self.ui.label_stats_leak.setStyleSheet("color: #cc0000; font-weight:600")
+    self.ui.label_stats_leaks.setText(f"Утечек: {self.scan_result.compromised_count}")
+    self.ui.label_stats_leaks.setStyleSheet("color: #cc0000; font-weight:600")
 
-    self.ui.label_stats_exclude.setText(f"Исключения: {self.scan_result.compromised_count}")
-    self.ui.label_stats_exclude.setStyleSheet("font-weight:600")
+    self.ui.label_stats_excluded.setText(f"Исключения: {self.scan_result.compromised_count}")
+    self.ui.label_stats_excluded.setStyleSheet("font-weight:600")
 
-    self.ui.label_stats_no_login.setText(f"Нет входа: {self.scan_result.no_login_count}")
-    self.ui.label_stats_no_login.setStyleSheet("color: #ffaa00; font-weight:600")
+    self.ui.label_stats_no_logins.setText(f"Нет входа: {self.scan_result.no_login_count}")
+    self.ui.label_stats_no_logins.setStyleSheet("color: #ffaa00; font-weight:600")
 
-    self.ui.label_stats_matched.setText(f"Сопоставлено: {self.scan_result.matched_count}")
-    self.ui.label_stats_matched.setStyleSheet("color: #00c500; font-weight:600")
+    self.ui.label_stats_matches.setText(f"Сопоставлено: {self.scan_result.matched_count}")
+    self.ui.label_stats_matches.setStyleSheet("color: #00c500; font-weight:600")
 
-    self.ui.label_stats_all.setText(f"Всего: {self.scan_result.total_count}")
-    self.ui.label_stats_all.setStyleSheet("font-weight:600")
+    self.ui.label_stats_total.setText(f"Всего: {self.scan_result.total_count}")
+    self.ui.label_stats_total.setStyleSheet("font-weight:600")
 
 
 def on_finished(self):
