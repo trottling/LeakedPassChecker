@@ -1,18 +1,18 @@
 import os
 
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
 from app.checker import Checker, Checker_config
-from app.utils import _build_combined_headers, _iter_joined_rows, get_rel_path, warn_user
+from app.utils import _build_combined_headers, _iter_joined_rows, clean_str, get_rel_path, warn_user
+
 
 
 def select_entrance_table(self):
     try:
-        file_path, _ = QFileDialog.getOpenFileName(None, "Выбери Excel файл", "", "Excel Files (*.xlsx *.xls)")
+        file_path, _ = QFileDialog.getOpenFileName(None, "Выберите Excel файл", "", "Excel Files (*.xlsx *.xls)")
 
         if not file_path:
             return
@@ -23,6 +23,28 @@ def select_entrance_table(self):
 
 
 def select_login_table(self):
+    try:
+        file_path, _ = QFileDialog.getOpenFileName(None, "Выберите Excel файл", "", "Excel Files (*.xlsx *.xls)")
+
+        if not file_path:
+            return
+    except:
+        return
+
+    self.ui.lineEdit_login.setText(file_path)
+
+def select_fired_list(self):
+    try:
+        file_path, _ = QFileDialog.getOpenFileName(None, "Выберите TXT файл", "", "Text Files (*.txt)")
+
+        if not file_path:
+            return
+    except:
+        return
+
+    self.ui.lineEdit_fireds.setText(file_path)
+
+def select_exception_table(self):
     try:
         file_path, _ = QFileDialog.getOpenFileName(None, "Выбери Excel файл", "", "Excel Files (*.xlsx *.xls)")
 
@@ -92,17 +114,20 @@ def run_checker(self):
 def on_result(self, result):
     self.scan_result = result
 
-    html = f"""<html><head><meta name="qrichtext" content="1" /><style type="text/css">
-    p, li {{ white-space: pre-wrap; }}
-    </style></head><body style=" font-family:'Segoe UI'; font-size:14pt; font-weight:600; font-style:normal;">
-    <p style=" color:#cc0000; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Утечек: {self.scan_result.compromised_count}</p>
-    <p align="justify" style=" color:#ffaa00; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Нет входа: {self.scan_result.no_login_count}</p>
-    <p align="justify" style=" color:#00c500; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Сопоставлено: {self.scan_result.matched_count}</p>
-    <p align="justify" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Всего: {self.scan_result.total_count}</p></body></html>
-    """
+    self.ui.label_stats_leak.setText(f"Утечек: {self.scan_result.compromised_count}")
+    self.ui.label_stats_leak.setStyleSheet("color: #cc0000; font-weight:600")
 
-    self.ui.label_stats.setTextFormat(Qt.TextFormat.RichText)
-    self.ui.label_stats.setText(html)
+    self.ui.label_stats_exclude.setText(f"Исключения: {self.scan_result.compromised_count}")
+    self.ui.label_stats_exclude.setStyleSheet("font-weight:600")
+
+    self.ui.label_stats_no_login.setText(f"Нет входа: {self.scan_result.no_login_count}")
+    self.ui.label_stats_no_login.setStyleSheet("color: #ffaa00; font-weight:600")
+
+    self.ui.label_stats_matched.setText(f"Сопоставлено: {self.scan_result.matched_count}")
+    self.ui.label_stats_matched.setStyleSheet("color: #00c500; font-weight:600")
+
+    self.ui.label_stats_all.setText(f"Всего: {self.scan_result.total_count}")
+    self.ui.label_stats_all.setStyleSheet("font-weight:600")
 
 
 def on_finished(self):

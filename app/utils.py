@@ -1,10 +1,33 @@
 import os
+import re
 import sys
 
 from PyQt6.QtWidgets import QMessageBox
 
 
-def get_rel_path(data_path, slash_replace=True):
+def clean_str(text: str) -> str:
+    # Ё -> Е
+    text = text.replace("Ё", "Е")
+
+    # оставляем только А-Я, остальное -> пробел
+    text = re.sub(r'[^А-Я]', ' ', text)
+
+    # сжимаем пробелы
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    # всё в lower()
+    text = text.lower()
+
+    # каждое слово с заглавной
+    text = ' '.join(word.capitalize() for word in text.split())
+
+    # пробелы по бокам
+    text = text.strip()
+
+    return text
+
+
+def get_rel_path(data_path, slash_replace = True):
     if getattr(sys, 'frozen', False):
         try:
             base_path = sys._MEIPASS
@@ -14,13 +37,13 @@ def get_rel_path(data_path, slash_replace=True):
         data_path = f"..\\assets\\{data_path}"
         base_path = os.path.dirname(os.path.abspath(__file__))
 
-
     result = os.path.join(base_path, data_path)
 
     if slash_replace:
         result = result.replace("\\", "/")
 
     return str(result)
+
 
 def warn_user(title, text):
     msg = QMessageBox()

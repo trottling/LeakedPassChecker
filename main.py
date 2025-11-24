@@ -12,7 +12,7 @@ def main():
         main_window = App()
         sys.exit(app.exec())
     except Exception as e:
-        warn_user("Глобальная ошибка", str(e))
+        warn_user("Глобальная ошибка", f"{str(e)}\n\n{e.args}")
 
 if __name__ == '__main__':
     main()
