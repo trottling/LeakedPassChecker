@@ -53,7 +53,7 @@ def select_exception_table(self):
     except:
         return
 
-    self.ui.lineEdit_login.setText(file_path)
+    self.ui.lineEdit_exceptions.setText(file_path)
 
 
 def inactive_ui(self):
@@ -73,35 +73,45 @@ def active_ui(self):
 
 
 def run_checker(self):
-    entrance_table_path = self.ui.lineEdit_entrance.text()
-    login_table_path = self.ui.lineEdit_login.text()
+    entrances_table_path = self.ui.lineEdit_entrance.text()
+    logins_table_path = self.ui.lineEdit_login.text()
+    exceptions_table_path = self.ui.lineEdit_exceptions.text()
+    fired_list_path = self.ui.lineEdit_fireds.text()
 
-    if entrance_table_path == "":
+    if entrances_table_path == "":
         warn_user("Заполните все поля", "Путь к журналу проходной пустой")
         return
 
-    if login_table_path == "":
+    if logins_table_path == "":
         warn_user("Заполните все поля", "Путь к журналу входов в систему пустой")
         return
 
-    if entrance_table_path == login_table_path:
+    if entrances_table_path == logins_table_path:
         warn_user("Неправильный таблицы", "Одинаковые пути к журналам")
         return
 
-    if not os.path.isfile(entrance_table_path):
+    if not os.path.isfile(entrances_table_path):
         warn_user("Файл не найден", "Неправильный путь к журналу проходной")
         return
 
-    if not os.path.isfile(login_table_path):
+    if not os.path.isfile(logins_table_path):
         warn_user("Файл не найден", "Неправильный путь к журналу входов в систему")
+        return
+
+    if not os.path.isfile(exceptions_table_path):
+        warn_user("Файл не найден", "Неправильный путь к таблице исключений")
+        return
+
+    if not os.path.isfile(fired_list_path):
+        warn_user("Файл не найден", "Неправильный путь к списку уволенных")
         return
 
     inactive_ui(self)
 
     checker = Checker(
         Checker_config(
-            logins_table_path=login_table_path,
-            entrance_table_path=entrance_table_path,
+            logins_table_path=logins_table_path,
+            entrance_table_path=entrances_table_path,
             )
         )
 
