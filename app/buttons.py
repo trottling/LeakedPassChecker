@@ -9,7 +9,6 @@ from app.checker import Checker, Checker_config
 from app.utils import _build_combined_headers, _iter_joined_rows, clean_str, get_rel_path, warn_user
 
 
-
 def select_entrance_table(self):
     try:
         file_path, _ = QFileDialog.getOpenFileName(None, "Выберите Excel файл", "", "Excel Files (*.xlsx *.xls)")
@@ -33,6 +32,7 @@ def select_login_table(self):
 
     self.ui.lineEdit_login.setText(file_path)
 
+
 def select_fired_list(self):
     try:
         file_path, _ = QFileDialog.getOpenFileName(None, "Выберите TXT файл", "", "Text Files (*.txt)")
@@ -43,6 +43,7 @@ def select_fired_list(self):
         return
 
     self.ui.lineEdit_fireds.setText(file_path)
+
 
 def select_exception_table(self):
     try:
