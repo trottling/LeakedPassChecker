@@ -2,6 +2,8 @@ import os
 
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import QFileDialog
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
 
 from app.checker import Checker, CheckerConfig
 from app.utils import get_rel_path, warn_user
@@ -119,6 +121,7 @@ def run_checker(self):
     checker.signals.result.connect(lambda result: on_result(self, result))
     checker.signals.finished.connect(lambda: on_finished(self))
     checker.signals.error.connect(lambda e: on_error(self, e))
+    checker.signals.stats.connect(lambda done, total: on_stat(self, done, total))
     QtCore.QThreadPool.globalInstance().start(checker)
 
 def on_stat(self, done, total):
@@ -169,4 +172,78 @@ def export_result(self):
 
 
 def export_to_excel(result, path):
-    pass
+    categories = [
+        ("Утечки", result.compromised),
+        ("Исключения", result.exceptions),
+        ("Нет входа", result.no_login),
+        ("Сопоставлено", result.matched)
+    ]
+    headers = [
+        "ФИО",
+        "Отдел",
+        "Таб. №",
+        "User Name",
+        "Client Host Name",
+        "Logon Time",
+        "Event Type Text",
+        "Message"
+    ]
+    header_font = Font(bold=True)
+    header_alignment = Alignment(horizontal="center", vertical="center")
+
+    def fill_sheet(ws, data):
+        ws.sheet_properties.outlinePr.summaryBelow = False
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font = header_font
+            cell.alignment = header_alignment
+        current_row = 1
+
+        for person in data:
+            fio = person.get("fio") or person.get("user_display_name") or person.get("key")
+            department = person.get("department") or ""
+            tab_number = person.get("tab_number") or ""
+            ws.append([fio, department, tab_number, "", "", "", "", ""])
+            current_row += 1
+
+            logins = person.get("logins") or []
+            if logins:
+                start_row = current_row + 1
+                for login in logins:
+                    ws.append([
+                        "",
+                        "",
+                        "",
+                        login.get("user_name"),
+                        login.get("client_host_name"),
+                        login.get("logon_time"),
+                        login.get("event_type_text"),
+                        login.get("message") or login.get("failure_reason")
+                    ])
+                    current_row += 1
+                ws.row_dimensions.group(start_row, current_row, hidden=True)
+
+        autosize(ws)
+
+    def autosize(ws):
+        for column_cells in ws.columns:
+            column_letter = column_cells[0].column_letter
+            max_length = 0
+            for cell in column_cells:
+                if cell.value is None:
+                    continue
+                max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[column_letter].width = min(70, max(12, max_length + 2))
+
+    workbook = Workbook()
+    first_sheet = True
+    for name, data in categories:
+        if first_sheet:
+            sheet = workbook.active
+            sheet.title = name
+            first_sheet = False
+        else:
+            sheet = workbook.create_sheet(title=name)
+        fill_sheet(sheet, data)
+
+    workbook.save(path)
