@@ -18,7 +18,7 @@ REM Сборка через Nuitka
   --onefile ^
   --enable-plugin=pyqt6 ^
   --output-dir=dist ^
-  --python-for-scons="%PYTHON%" ^
+  --python-for-scons=".venv\Scripts\python.exe" ^
   --windows-icon-from-ico="assets\icon.ico" ^
   --include-data-file="assets\excel.png=excel.png" ^
   --include-data-file="assets\file.png=file.png" ^

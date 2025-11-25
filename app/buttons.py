@@ -2,11 +2,9 @@ import os
 
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import QFileDialog
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 
-from app.checker import Checker, Checker_config
-from app.utils import _build_combined_headers, _iter_joined_rows, clean_str, get_rel_path, warn_user
+from app.checker import Checker, CheckerConfig
+from app.utils import get_rel_path, warn_user
 
 
 def select_entrance_table(self):
@@ -47,7 +45,7 @@ def select_fired_list(self):
 
 def select_exception_table(self):
     try:
-        file_path, _ = QFileDialog.getOpenFileName(None, "Выбери Excel файл", "", "Excel Files (*.xlsx *.xls)")
+        file_path, _ = QFileDialog.getOpenFileName(None, "Выберите TXT файл с паттернами исключений", "", "Text Files (*.txt);;Все файлы (*.*)")
 
         if not file_path:
             return
@@ -100,7 +98,7 @@ def run_checker(self):
         return
 
     if exceptions_table_path != "" and not os.path.isfile(exceptions_table_path):
-        warn_user("Файл не найден", "Неправильный путь к таблице исключений")
+        warn_user("Файл не найден", "Неправильный путь к файлу исключений")
         return
 
     if fired_list_path != "" and not os.path.isfile(fired_list_path):
@@ -110,7 +108,7 @@ def run_checker(self):
     inactive_ui(self)
 
     checker = Checker(
-        Checker_config(
+        CheckerConfig(
             logins_table_path=logins_table_path,
             entrances_table_path=entrances_table_path,
             exceptions_table_path=exceptions_table_path,
@@ -123,6 +121,8 @@ def run_checker(self):
     checker.signals.error.connect(lambda e: on_error(self, e))
     QtCore.QThreadPool.globalInstance().start(checker)
 
+def on_stat(self, done, total):
+    self.ui.pushButton_check.setText(f"{done} / {total}")
 
 def on_result(self, result):
     self.scan_result = result
@@ -130,7 +130,7 @@ def on_result(self, result):
     self.ui.label_stats_leaks.setText(f"Утечек: {self.scan_result.compromised_count}")
     self.ui.label_stats_leaks.setStyleSheet("color: #cc0000; font-weight:600")
 
-    self.ui.label_stats_excluded.setText(f"Исключения: {self.scan_result.compromised_count}")
+    self.ui.label_stats_excluded.setText(f"Исключения: {self.scan_result.exceptions_count}")
     self.ui.label_stats_excluded.setStyleSheet("font-weight:600")
 
     self.ui.label_stats_no_logins.setText(f"Нет входа: {self.scan_result.no_login_count}")
@@ -169,28 +169,4 @@ def export_result(self):
 
 
 def export_to_excel(result, path):
-    login_headers, entrance_headers, combined_headers = _build_combined_headers(result)
-
-    wb = Workbook()
-
-    # убираем дефолтный лист
-    wb.remove(wb.active)
-
-    def fill_sheet(title, entries):
-        ws = wb.create_sheet(title)
-        ws.append(combined_headers)
-
-        # ставим ширину столбцов
-        for col_idx, header in enumerate(combined_headers, start=1):
-            col_letter = get_column_letter(col_idx)
-            ws.column_dimensions[col_letter].width = max(15, len(str(header)) + 2)
-
-        for entry in entries:
-            for row in _iter_joined_rows(entry, login_headers, entrance_headers, combined_headers):
-                ws.append(row)
-
-    fill_sheet("Утечки", result.compromised)
-    fill_sheet("Нет входа", result.no_login)
-    fill_sheet("Сопоставлено", result.matched)
-
-    wb.save(path)
+    pass
