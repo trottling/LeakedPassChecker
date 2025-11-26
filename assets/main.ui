@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1050</width>
-    <height>579</height>
+    <width>1200</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="font">
@@ -942,7 +942,7 @@
       <item>
        <widget class="QLabel" name="label_stats_leaks">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -955,7 +955,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>110</width>
+          <width>9999</width>
           <height>130</height>
          </size>
         </property>
@@ -1012,7 +1012,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QLabel" name="label_stats_excluded">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1025,7 +1025,7 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="maximumSize">
          <size>
-          <width>160</width>
+          <width>9999</width>
           <height>130</height>
          </size>
         </property>
@@ -1081,7 +1081,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QLabel" name="label_stats_no_logins">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1094,7 +1094,7 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>9999</width>
           <height>130</height>
          </size>
         </property>
@@ -1150,7 +1150,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QLabel" name="label_stats_matches">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1163,7 +1163,7 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="maximumSize">
          <size>
-          <width>170</width>
+          <width>9999</width>
           <height>130</height>
          </size>
         </property>
@@ -1219,7 +1219,7 @@ p, li { white-space: pre-wrap; }
       <item>
        <widget class="QLabel" name="label_stats_total">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1232,7 +1232,7 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>9999</width>
           <height>130</height>
          </size>
         </property>
