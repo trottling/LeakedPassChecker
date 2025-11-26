@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from app.app import App
-from app.utils import warn_user
+from app.core import warn_user
 
 
 def main():

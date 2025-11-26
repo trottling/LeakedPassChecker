@@ -1,12 +1,40 @@
 import os
+import sys
 
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog, QMessageBox
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
-from app.checker import Checker, CheckerConfig
-from app.utils import get_rel_path, warn_user
+from app.checker import Checker, CheckerConfig, CheckerResult
+
+
+def warn_user(title, text):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(title)
+    msg.setText(text)
+    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msg.resize(500, 300)
+    msg.exec()
+
+
+def get_rel_path(data_path, slash_replace = True):
+    if getattr(sys, 'frozen', False):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            return ""
+    else:
+        data_path = f"..\\assets\\{data_path}"
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+    result = os.path.join(base_path, data_path)
+
+    if slash_replace:
+        result = result.replace("\\", "/")
+
+    return str(result)
 
 
 def select_entrance_table(self):
@@ -76,7 +104,7 @@ def active_ui(self):
 def run_checker(self):
     entrances_table_path = self.ui.lineEdit_entrances.text().strip()
     logins_table_path = self.ui.lineEdit_logins.text().strip()
-    exceptions_table_path = self.ui.lineEdit_exceptions.text().strip()
+    exceptions_list_path = self.ui.lineEdit_exceptions.text().strip()
     fired_list_path = self.ui.lineEdit_fireds.text().strip()
 
     if entrances_table_path == "":
@@ -99,8 +127,8 @@ def run_checker(self):
         warn_user("Файл не найден", "Неправильный путь к журналу входов в систему")
         return
 
-    if exceptions_table_path != "" and not os.path.isfile(exceptions_table_path):
-        warn_user("Файл не найден", "Неправильный путь к файлу исключений")
+    if exceptions_list_path != "" and not os.path.isfile(exceptions_list_path):
+        warn_user("Файл не найден", "Неправильный путь к списку исключений")
         return
 
     if fired_list_path != "" and not os.path.isfile(fired_list_path):
@@ -113,7 +141,7 @@ def run_checker(self):
         CheckerConfig(
             logins_table_path=logins_table_path,
             entrances_table_path=entrances_table_path,
-            exceptions_table_path=exceptions_table_path,
+            exceptions_list_path=exceptions_list_path,
             fired_list_path=fired_list_path
             )
         )
@@ -121,28 +149,25 @@ def run_checker(self):
     checker.signals.result.connect(lambda result: on_result(self, result))
     checker.signals.finished.connect(lambda: on_finished(self))
     checker.signals.error.connect(lambda e: on_error(self, e))
-    checker.signals.stats.connect(lambda done, total: on_stat(self, done, total))
     QtCore.QThreadPool.globalInstance().start(checker)
 
-def on_stat(self, done, total):
-    self.ui.pushButton_check.setText(f"{done} / {total}")
 
-def on_result(self, result):
+def on_result(self, result: CheckerResult):
     self.scan_result = result
 
-    self.ui.label_stats_leaks.setText(f"Утечек: {self.scan_result.compromised_count}")
+    self.ui.label_stats_leaks.setText(f"Утечек: {len(self.scan_result.compromised)}")
     self.ui.label_stats_leaks.setStyleSheet("color: #cc0000; font-weight:600")
 
-    self.ui.label_stats_excluded.setText(f"Исключения: {self.scan_result.exceptions_count}")
+    self.ui.label_stats_excluded.setText(f"Исключения: {len(self.scan_result.exceptions)}")
     self.ui.label_stats_excluded.setStyleSheet("font-weight:600")
 
-    self.ui.label_stats_no_logins.setText(f"Нет входа: {self.scan_result.no_login_count}")
+    self.ui.label_stats_no_logins.setText(f"Нет входа: {len(self.scan_result.no_login)}")
     self.ui.label_stats_no_logins.setStyleSheet("color: #ffaa00; font-weight:600")
 
-    self.ui.label_stats_matches.setText(f"Сопоставлено: {self.scan_result.matched_count}")
+    self.ui.label_stats_matches.setText(f"Сопоставлено: {len(self.scan_result.matched)}")
     self.ui.label_stats_matches.setStyleSheet("color: #00c500; font-weight:600")
 
-    self.ui.label_stats_total.setText(f"Всего: {self.scan_result.total_count}")
+    self.ui.label_stats_total.setText(f"Всего: {len(self.scan_result.compromised) + len(self.scan_result.exceptions) + len(self.scan_result.no_login) + len(self.scan_result.matched)}")
     self.ui.label_stats_total.setStyleSheet("font-weight:600")
 
 
@@ -176,8 +201,8 @@ def export_to_excel(result, path):
         ("Утечки", result.compromised),
         ("Исключения", result.exceptions),
         ("Нет входа", result.no_login),
-        ("Сопоставлено", result.matched)
-    ]
+        ("Сопоставлено", result.matched)]
+
     headers = [
         "ФИО",
         "Отдел",
@@ -186,64 +211,78 @@ def export_to_excel(result, path):
         "Client Host Name",
         "Logon Time",
         "Event Type Text",
-        "Message"
+        "Message",
     ]
+
     header_font = Font(bold=True)
     header_alignment = Alignment(horizontal="center", vertical="center")
+    wb = Workbook()
 
-    def fill_sheet(ws, data):
-        ws.sheet_properties.outlinePr.summaryBelow = False
+    first_sheet_created = False
+
+    for idx, (title, workers) in enumerate(categories):
+        if not workers:
+            continue
+
+        if not first_sheet_created:
+            ws = wb.active
+            ws.title = title
+            first_sheet_created = True
+        else:
+            ws = wb.create_sheet(title=title)
+
+        # Заголовки
         ws.append(headers)
-        for cell in ws[1]:
+        for col_idx, cell in enumerate(ws[1], start=1):
             cell.font = header_font
             cell.alignment = header_alignment
-        current_row = 1
 
-        for person in data:
-            fio = person.get("fio") or person.get("user_display_name") or person.get("key")
-            department = person.get("department") or ""
-            tab_number = person.get("tab_number") or ""
-            ws.append([fio, department, tab_number, "", "", "", "", ""])
+        # Данные в виде разворачивающегося списка:
+        # строка с ФИО -> вложенные строки с входами
+        current_row = 2
+
+        for worker in workers:
+            # строка сотрудника
+            ws.cell(row=current_row, column=1, value=worker.fio)
+            ws.cell(row=current_row, column=2, value=worker.department)
+            ws.cell(row=current_row, column=3, value=worker.tab_number)
+
+            ws.cell(row=current_row, column=1).font = header_font
+
             current_row += 1
 
-            logins = person.get("logins") or []
-            if logins:
-                start_row = current_row + 1
-                for login in logins:
-                    ws.append([
-                        "",
-                        "",
-                        "",
-                        login.get("user_name"),
-                        login.get("client_host_name"),
-                        login.get("logon_time"),
-                        login.get("event_type_text"),
-                        login.get("message") or login.get("failure_reason")
-                    ])
+            if worker.logins:
+                start_child_row = current_row
+
+                for login in worker.logins:
+                    ws.cell(row=current_row, column=4, value=login.user_name)
+                    ws.cell(row=current_row, column=5, value=login.client_host_name)
+                    ws.cell(row=current_row, column=6, value=login.logon_time)
+                    ws.cell(row=current_row, column=7, value=login.event_type_text)
+                    ws.cell(row=current_row, column=8, value=login.message)
+
                     current_row += 1
-                ws.row_dimensions.group(start_row, current_row, hidden=True)
+
+                # группируем строки входов, чтобы их можно было сворачивать/разворачивать
+                ws.row_dimensions.group(start_child_row, current_row - 1, outline_level=1, hidden=True)
 
         autosize(ws)
 
-    def autosize(ws):
-        for column_cells in ws.columns:
-            column_letter = column_cells[0].column_letter
-            max_length = 0
-            for cell in column_cells:
-                if cell.value is None:
-                    continue
-                max_length = max(max_length, len(str(cell.value)))
-            ws.column_dimensions[column_letter].width = min(70, max(12, max_length + 2))
+    if not first_sheet_created:
+        ws = wb.active
+        ws.title = "Результаты"
+        ws.append(["Нет данных для экспорта"])
 
-    workbook = Workbook()
-    first_sheet = True
-    for name, data in categories:
-        if first_sheet:
-            sheet = workbook.active
-            sheet.title = name
-            first_sheet = False
-        else:
-            sheet = workbook.create_sheet(title=name)
-        fill_sheet(sheet, data)
+    wb.save(path)
 
-    workbook.save(path)
+
+def autosize(ws):
+    for column_cells in ws.columns:
+        column_letter = column_cells[0].column_letter
+        max_length = 0
+        for cell in column_cells:
+            if cell.value is None:
+                continue
+            max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column_letter].width = min(70, max(12, max_length + 10))
+
