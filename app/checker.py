@@ -81,13 +81,13 @@ class Checker(QRunnable):
         entrances = self.load_entrances()
         logins = self.load_logins()
 
-        entrances_by_fio: dict[str, list[Entrance]] = {}
+        entrances_by_fio: dict[str, list[Entrance]] = { }
         for e in entrances:
             if e.fio not in entrances_by_fio:
                 entrances_by_fio[e.fio] = []
             entrances_by_fio[e.fio].append(e)
 
-        logins_by_fio: dict[str, list[Login]] = {}
+        logins_by_fio: dict[str, list[Login]] = { }
         for login in logins:
             fio = login.user_display_name
             if fio not in logins_by_fio:
@@ -116,8 +116,7 @@ class Checker(QRunnable):
                 fio=fio,
                 tab_number=tab_number,
                 logins=fio_logins,
-            )
-            print(worker)
+                )
 
             has_entrance = bool(fio_entrances)
             has_login = bool(fio_logins)
@@ -131,7 +130,7 @@ class Checker(QRunnable):
                         worker.fio,
                         worker.department,
                         worker.tab_number,
-                    ]
+                        ]
                     for login in worker.logins:
                         fields_to_check.extend(
                             [
@@ -139,8 +138,8 @@ class Checker(QRunnable):
                                 login.client_host_name,
                                 login.user_display_name,
                                 login.user_distinguish_name,
-                            ]
-                        )
+                                ]
+                            )
                     if any(match_pattern(pattern, value) for value in fields_to_check if value):
                         is_exception = True
                         break
@@ -157,7 +156,7 @@ class Checker(QRunnable):
             matched=matched,
             no_login=no_login,
             exceptions=exceptions,
-        )
+            )
 
     def load_logins(self) -> list[Login]:
         wb = load_workbook(self.config.logins_table_path, data_only=True)

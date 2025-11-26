@@ -212,7 +212,7 @@ def export_to_excel(result, path):
         "Logon Time",
         "Event Type Text",
         "Message",
-    ]
+        ]
 
     header_font = Font(bold=True)
     header_alignment = Alignment(horizontal="center", vertical="center")
@@ -285,4 +285,3 @@ def autosize(ws):
                 continue
             max_length = max(max_length, len(str(cell.value)))
         ws.column_dimensions[column_letter].width = min(70, max(12, max_length + 10))
-
