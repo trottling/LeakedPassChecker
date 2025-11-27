@@ -102,10 +102,10 @@ def active_ui(self):
 
 
 def run_checker(self):
-    entrances_table_path = self.ui.lineEdit_entrances.text().strip()
-    logins_table_path = self.ui.lineEdit_logins.text().strip()
-    exceptions_list_path = self.ui.lineEdit_exceptions.text().strip()
-    fired_list_path = self.ui.lineEdit_fireds.text().strip()
+    entrances_table_path = self.ui.lineEdit_entrances.text().strip().replace("/", "\\")
+    logins_table_path = self.ui.lineEdit_logins.text().strip().replace("/", "\\")
+    exceptions_list_path = self.ui.lineEdit_exceptions.text().strip().replace("/", "\\")
+    fired_list_path = self.ui.lineEdit_fireds.text().strip().replace("/", "\\")
 
     if entrances_table_path == "":
         warn_user("Заполните все поля", "Путь к журналу проходной пустой")
@@ -127,13 +127,15 @@ def run_checker(self):
         warn_user("Файл не найден", "Неправильный путь к журналу входов в систему")
         return
 
-    if exceptions_list_path != "" and not os.path.isfile(exceptions_list_path):
-        warn_user("Файл не найден", "Неправильный путь к списку исключений")
-        return
+    if exceptions_list_path != "":
+        if not os.path.exists(exceptions_list_path) or not os.path.isfile(exceptions_list_path):
+            warn_user("Файл не найден", "Неправильный путь к списку исключений")
+            return
 
-    if fired_list_path != "" and not os.path.isfile(fired_list_path):
-        warn_user("Файл не найден", "Неправильный путь к списку уволенных")
-        return
+    if fired_list_path != "":
+        if not os.path.exists(fired_list_path) or not os.path.isfile(fired_list_path):
+            warn_user("Файл не найден", "Неправильный путь к списку уволенных")
+            return
 
     inactive_ui(self)
 

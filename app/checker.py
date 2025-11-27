@@ -1,3 +1,4 @@
+import os.path
 import re
 from dataclasses import dataclass
 
@@ -102,7 +103,6 @@ class Checker(QRunnable):
         all_fios = set(entrances_by_fio.keys()) | set(logins_by_fio.keys())
 
         for fio in all_fios:
-
 
             fio_entrances = entrances_by_fio.get(fio, [])
             fio_logins = logins_by_fio.get(fio, [])
@@ -253,14 +253,30 @@ class Checker(QRunnable):
     def load_lists(self) -> None:
 
         # ФИО уволенных
-
-        with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore") as f:
-            self.fired_list = [clean_fio(line) for line in f.readlines()]
+        try:
+            with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore") as f:
+                self.fired_list = []
+                for line in f.readlines():
+                    line = line.strip()
+                    if line != "":
+                        self.fired_list.append(clean_fio(line))
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            raise ValueError(f"Ошибка чтения файла с ФИО уволенных: {str(e)}")
 
         # Паттерны исключений
-
-        with open(self.config.exceptions_list_path, "r", encoding="utf-8", errors="ignore") as f:
-            self.exceptions_list = [create_pattern(line) for line in f.readlines()]
+        try:
+            with open(self.config.exceptions_list_path, "r", encoding="utf-8", errors="ignore") as f:
+                self.exceptions_list = []
+                for line in f.readlines():
+                    line = line.strip()
+                    if line != "":
+                        self.exceptions_list.append(line)
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            raise ValueError(f"Ошибка чтения файла с исключениями: {str(e)}")
 
 
 def normalize(value):
@@ -270,6 +286,7 @@ def normalize(value):
 def clean_fio(text: str) -> str:
     # Ё -> Е
     text = text.replace("Ё", "Е")
+    text = text.replace("ё", "е")
 
     # оставляем только А-Я, остальное -> пробел
     text = re.sub(r'[^А-Яа-я]', ' ', text)
