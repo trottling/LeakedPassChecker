@@ -21,12 +21,7 @@ REM Сборка через PyInstaller
   --name "LeakChecker" ^
   --onedir ^
   --icon "assets\icon.ico" ^
-  --add-data "assets\excel.png;." ^
-  --add-data "assets\file.png;." ^
-  --add-data "assets\icon.png;." ^
-  --add-data "assets\loading.png;." ^
-  --add-data "assets\start.png;." ^
-  --add-data "assets\main.ui;." ^
+  --add-data "assets\*.*;." ^
   main.py
 
 echo.

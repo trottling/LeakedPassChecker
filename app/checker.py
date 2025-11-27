@@ -102,8 +102,7 @@ class Checker(QRunnable):
         all_fios = set(entrances_by_fio.keys()) | set(logins_by_fio.keys())
 
         for fio in all_fios:
-            if fio in self.fired_list:
-                continue
+
 
             fio_entrances = entrances_by_fio.get(fio, [])
             fio_logins = logins_by_fio.get(fio, [])
@@ -117,6 +116,10 @@ class Checker(QRunnable):
                 tab_number=tab_number,
                 logins=fio_logins,
                 )
+
+            if fio in self.fired_list:
+                exceptions.append(worker)
+                continue
 
             has_entrance = bool(fio_entrances)
             has_login = bool(fio_logins)
