@@ -4,10 +4,8 @@ from pathlib import Path
 from faker import Faker
 from openpyxl import Workbook
 
-
 BASE_DIR = Path(__file__).resolve().parent
 EXAMPLES_DIR = BASE_DIR / "examples"
-
 
 fake = Faker("ru_RU")
 
@@ -45,8 +43,8 @@ def generate_entrances_xlsx(path: Path, employees: list[dict], days: int = 3) ->
                     emp["tab_number"],
                     " / ".join(events_in),
                     " / ".join(events_out),
-                ]
-            )
+                    ]
+                )
 
     wb.save(path)
 
@@ -69,7 +67,7 @@ def generate_logins_xlsx(path: Path, employees: list[dict], rows_per_employee: i
         "message",
         "user display name",
         "user distinguish name",
-    ]
+        ]
     ws.append(headers)
 
     for emp in employees:
@@ -84,8 +82,8 @@ def generate_logins_xlsx(path: Path, employees: list[dict], rows_per_employee: i
                     "User logon successful",
                     "User initiated logoff",
                     "Kerberos authentication ticket granted",
-                ]
-            )
+                    ]
+                )
             user_display_name = emp["fio"]
             user_dn = f"CN={emp['fio']},OU=Users,DC=example,DC=local"
 
@@ -99,8 +97,8 @@ def generate_logins_xlsx(path: Path, employees: list[dict], rows_per_employee: i
                     message,
                     user_display_name,
                     user_dn,
-                ]
-            )
+                    ]
+                )
 
     wb.save(path)
 
@@ -120,7 +118,7 @@ def generate_exceptions_list(path: Path) -> None:
         "*test*",
         "*vpn*",
         "*service*",
-    ]
+        ]
     with path.open("w", encoding="utf-8") as f:
         for p in patterns:
             f.write(p + "\n")
@@ -139,28 +137,29 @@ def generate_employees(count: int = 30) -> list[dict]:
                 "department": department,
                 "tab_number": tab_number,
                 "login": login,
-            }
-        )
+                }
+            )
     return employees
 
 
 def main() -> None:
     ensure_examples_dir()
 
-    employees = generate_employees(10000)
+    legit_employees = generate_employees(1000)
+    leak_employees = generate_employees(1000)
+    no_login_employees = generate_employees(1000)
 
     entrances_path = EXAMPLES_DIR / "entrance_test.xlsx"
     logins_path = EXAMPLES_DIR / "logins_test.xlsx"
     fired_path = EXAMPLES_DIR / "fired_test.txt"
     exceptions_path = EXAMPLES_DIR / "exceptions_test.txt"
 
-    generate_entrances_xlsx(entrances_path, employees)
-    generate_logins_xlsx(logins_path, employees)
-    generate_fired_list(fired_path, employees)
+    generate_entrances_xlsx(entrances_path, legit_employees + no_login_employees)
+    generate_logins_xlsx(logins_path, legit_employees + leak_employees)
+
+    generate_fired_list(fired_path, legit_employees[:int(len(legit_employees) / 10)])
     generate_exceptions_list(exceptions_path)
 
 
 if __name__ == "__main__":
     main()
-
-
