@@ -7,8 +7,9 @@ from app.core import *
 
 
 class App(QMainWindow):
-    def __init__(self):
+    def __init__(self, version: str):
         super().__init__()
+        self.version = version
         self.ui = None
         self.scan_result = None
         self.settings = QSettings("LeakedPassChecker", "App")
@@ -16,7 +17,7 @@ class App(QMainWindow):
 
     def load_ui(self):
         self.ui = uic.loadUi(get_rel_path("main.ui"), self)
-        self.ui.setWindowTitle("Поиск утекших паролей")
+        self.ui.setWindowTitle(f"Поиск утекших паролей {self.version}")
         self.ui.setWindowIcon(QIcon(get_rel_path('icon.ico')))
 
         # Картинки
