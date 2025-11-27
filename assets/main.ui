@@ -89,7 +89,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Таблица исключений</string>
+         <string>Список исключений</string>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
