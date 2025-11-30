@@ -145,9 +145,9 @@ def generate_employees(count: int = 30) -> list[dict]:
 def main() -> None:
     ensure_examples_dir()
 
-    legit_employees = generate_employees(1000)
-    leak_employees = generate_employees(1000)
-    no_login_employees = generate_employees(1000)
+    legit_employees = generate_employees(10000)
+    leak_employees = generate_employees(10000)
+    no_login_employees = generate_employees(10000)
 
     entrances_path = EXAMPLES_DIR / "entrance_test.xlsx"
     logins_path = EXAMPLES_DIR / "logins_test.xlsx"

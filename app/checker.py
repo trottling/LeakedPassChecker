@@ -62,8 +62,8 @@ class Checker(QRunnable):
     def __init__(self, config: CheckerConfig):
         super().__init__()
         self.config = config
-        self.exceptions_list: list[str] = []
-        self.fired_list: list[str] = []
+        self.exception_patterns: list[re.Pattern[str]] = []
+        self.fired: set[str] = set()
         self.signals = CheckerSignals()
 
     @pyqtSlot()
@@ -84,16 +84,12 @@ class Checker(QRunnable):
 
         entrances_by_fio: dict[str, list[Entrance]] = { }
         for e in entrances:
-            if e.fio not in entrances_by_fio:
-                entrances_by_fio[e.fio] = []
-            entrances_by_fio[e.fio].append(e)
+            entrances_by_fio.setdefault(e.fio, []).append(e)
 
         logins_by_fio: dict[str, list[Login]] = { }
         for login in logins:
             fio = login.user_display_name
-            if fio not in logins_by_fio:
-                logins_by_fio[fio] = []
-            logins_by_fio[fio].append(login)
+            logins_by_fio.setdefault(fio, []).append(login)
 
         compromised: list[Worker] = []
         exceptions: list[Worker] = []
@@ -103,21 +99,16 @@ class Checker(QRunnable):
         all_fios = set(entrances_by_fio.keys()) | set(logins_by_fio.keys())
 
         for fio in all_fios:
-
             fio_entrances = entrances_by_fio.get(fio, [])
             fio_logins = logins_by_fio.get(fio, [])
 
             department = fio_entrances[0].department if fio_entrances else ""
             tab_number = fio_entrances[0].tab_number if fio_entrances else ""
 
-            worker = Worker(
-                department=department,
-                fio=fio,
-                tab_number=tab_number,
-                logins=fio_logins,
-                )
+            worker = Worker(department=department, fio=fio, tab_number=tab_number, logins=fio_logins)
 
-            if fio in self.fired_list:
+            # быстрый чек "уволен" через set
+            if fio in self.fired:
                 exceptions.append(worker)
                 continue
 
@@ -127,23 +118,14 @@ class Checker(QRunnable):
             if has_login and has_entrance:
                 matched.append(worker)
             elif has_login and not has_entrance:
+                # Собираем поля один раз
+                fields_to_check: list[str] = [worker.fio, worker.department, worker.tab_number, ]
+                for login in worker.logins:
+                    fields_to_check.extend([login.user_name, login.client_host_name, login.user_display_name, login.user_distinguish_name, ])
+
                 is_exception = False
-                for pattern in self.exceptions_list:
-                    fields_to_check = [
-                        worker.fio,
-                        worker.department,
-                        worker.tab_number,
-                        ]
-                    for login in worker.logins:
-                        fields_to_check.extend(
-                            [
-                                login.user_name,
-                                login.client_host_name,
-                                login.user_display_name,
-                                login.user_distinguish_name,
-                                ]
-                            )
-                    if any(match_pattern(pattern, value) for value in fields_to_check if value):
+                for pattern in self.exception_patterns:
+                    if any(pattern.match(value) for value in fields_to_check if value):
                         is_exception = True
                         break
 
@@ -154,15 +136,10 @@ class Checker(QRunnable):
             elif has_entrance and not has_login:
                 no_login.append(worker)
 
-        return CheckerResult(
-            compromised=compromised,
-            matched=matched,
-            no_login=no_login,
-            exceptions=exceptions,
-            )
+        return CheckerResult(compromised=compromised, matched=matched, no_login=no_login, exceptions=exceptions, )
 
     def load_logins(self) -> list[Login]:
-        wb = load_workbook(self.config.logins_table_path, data_only=True)
+        wb = load_workbook(self.config.logins_table_path, data_only=True, read_only=True, )
         ws = wb.active
 
         expected_headers = [
@@ -213,7 +190,7 @@ class Checker(QRunnable):
         return logins
 
     def load_entrances(self) -> list[Entrance]:
-        wb = load_workbook(self.config.entrances_table_path, data_only=True)
+        wb = load_workbook(self.config.entrances_table_path, data_only=True, read_only=True, )
         ws = wb.active
 
         expected_headers = [
@@ -240,26 +217,28 @@ class Checker(QRunnable):
         entrances: list[Entrance] = []
 
         for row in ws.iter_rows(min_row=data_start_row_idx, values_only=True):
-            entrances.append(
-                Entrance(
-                    department=normalize(row[1]),
-                    fio=clean_fio(normalize(row[2])),
-                    tab_number=normalize(row[3]),
-                    )
-                )
+            department = normalize(row[1])
+            fio = clean_fio(normalize(row[2]))
+            tab_number = normalize(row[3])
+
+            # пропускаем полностью пустые строки
+            if not department and not fio and not tab_number:
+                continue
+
+            entrances.append(Entrance(department=department, fio=fio, tab_number=tab_number, ))
 
         return entrances
 
     def load_lists(self) -> None:
-
         # ФИО уволенных
         try:
-            with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore") as f:
-                self.fired_list = []
-                for line in f.readlines():
+            with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore", ) as f:
+                for line in f:
                     line = line.strip()
-                    if line != "":
-                        self.fired_list.append(clean_fio(line))
+                    if line:
+                        fio = clean_fio(line)
+                        self.fired.add(fio)
+
         except FileNotFoundError:
             pass
         except Exception as e:
@@ -267,19 +246,26 @@ class Checker(QRunnable):
 
         # Паттерны исключений
         try:
-            with open(self.config.exceptions_list_path, "r", encoding="utf-8", errors="ignore") as f:
-                self.exceptions_list = []
-                for line in f.readlines():
-                    line = line.strip()
-                    if line != "":
-                        self.exceptions_list.append(line)
+            with open(self.config.exceptions_list_path, "r", encoding="utf-8", errors="ignore", ) as f:
+                self.exception_patterns = []
+                for line in f:
+                    raw = line.strip()
+                    if not raw:
+                        continue
+                    try:
+                        pattern_str = create_pattern(raw)
+                        pattern_re = re.compile(pattern_str, re.IGNORECASE)
+                    except re.error as e:
+                        raise ValueError(f"Ошибка в паттерне исключения '{raw}': {e}")
+                    self.exception_patterns.append(pattern_re)
         except FileNotFoundError:
+            # файл не обязателен
             pass
         except Exception as e:
             raise ValueError(f"Ошибка чтения файла с исключениями: {str(e)}")
 
 
-def normalize(value):
+def normalize(value) -> str:
     return str(value).strip() if value is not None else ""
 
 
@@ -289,16 +275,16 @@ def clean_fio(text: str) -> str:
     text = text.replace("ё", "е")
 
     # оставляем только А-Я, остальное -> пробел
-    text = re.sub(r'[^А-Яа-я]', ' ', text)
+    text = re.sub(r"[^А-Яа-я]", " ", text)
 
     # сжимаем пробелы
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
 
     # всё в lower()
     text = text.lower()
 
     # каждое слово с заглавной
-    text = ' '.join(word.capitalize() for word in text.split())
+    text = " ".join(word.capitalize() for word in text.split())
 
     # пробелы по бокам
     text = text.strip()
@@ -310,22 +296,6 @@ def create_pattern(raw: str) -> str:
     # Преобразуем паттерн в регулярное выражение и экранируем специальные символы regex, кроме * и ?
     pattern_re = re.escape(raw)
     # Заменяем экранированные \* и \? на соответствующие regex паттерны
-    pattern_re = pattern_re.replace(r'\*', '.*').replace(r'\?', '.')
+    pattern_re = pattern_re.replace(r"\*", ".*").replace(r"\?", ".")
     # Добавляем якоря для полного совпадения
-    return f'^{pattern_re}$'
-
-
-def match_pattern(pattern: str, text: str) -> bool:
-    # Сопоставляет текст с паттерном, поддерживая wildcards:
-    # * - любое количество любых символов
-    # ? - один любой символ
-
-    if not pattern:
-        return False
-    if not text:
-        text = ""
-
-    try:
-        return bool(re.match(pattern, str(text), re.IGNORECASE))
-    except:
-        return False
+    return f"^{pattern_re}$"
