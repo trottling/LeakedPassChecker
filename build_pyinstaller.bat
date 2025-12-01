@@ -48,7 +48,6 @@ if exist "%ZIP_PATH%" del "%ZIP_PATH%"
     "test_data_creator.py" ^
     "app" ^
     "assets" ^
-    "examples" ^
     "dist\LeakChecker.exe"
 
 echo.
