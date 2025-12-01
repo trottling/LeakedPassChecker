@@ -1,4 +1,4 @@
-from PyQt6 import uic
+from PyQt6 import QtGui, uic
 from PyQt6.QtCore import QSettings
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMainWindow

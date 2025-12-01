@@ -163,7 +163,7 @@ class Checker(QRunnable):
             actual_headers.append(header)
 
         if actual_headers != expected_headers:
-            raise ValueError("Неправильная таблица логинов")
+            raise ValueError(f"Неправильная таблица проходной\n\nExpected headers: {expected_headers}\nActual headers: {actual_headers}")
 
         logins: list[Login] = []
 
@@ -199,7 +199,6 @@ class Checker(QRunnable):
             "фио",
             "таб. №",
             "события",
-            "",
             ]
 
         header_row_idx = 7
@@ -211,8 +210,8 @@ class Checker(QRunnable):
             header = normalize(cell_value).lower()
             actual_headers.append(header)
 
-        if actual_headers != expected_headers:
-            raise ValueError("Неправильная таблица проходной")
+        if actual_headers[:5] != expected_headers: # второй столбец "события" может быть не всегда
+            raise ValueError(f"Неправильная таблица проходной\n\nExpected headers: {expected_headers}\nActual headers: {actual_headers}")
 
         entrances: list[Entrance] = []
 

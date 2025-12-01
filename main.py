@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication
 from app.app import App
 from app.core import warn_user
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 def main():
     try:
@@ -13,7 +13,7 @@ def main():
         main_window = App(VERSION)
         sys.exit(app.exec())
     except Exception as e:
-        warn_user("Глобальная ошибка", f"{str(e)}\n\n{e.args}")
+        warn_user(None, "Глобальная ошибка", f"{str(e)}\n\n{e.args}")
 
 if __name__ == '__main__':
     main()
