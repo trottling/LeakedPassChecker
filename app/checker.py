@@ -199,6 +199,7 @@ class Checker(QRunnable):
             "фио",
             "таб. №",
             "события",
+            "события"
             ]
 
         header_row_idx = 7
@@ -210,7 +211,7 @@ class Checker(QRunnable):
             header = normalize(cell_value).lower()
             actual_headers.append(header)
 
-        if actual_headers[:5] != expected_headers: # второй столбец "события" может быть не всегда
+        if actual_headers != expected_headers:
             raise ValueError(f"Неправильная таблица проходной\n\nExpected headers: {expected_headers}\nActual headers: {actual_headers}")
 
         entrances: list[Entrance] = []
@@ -252,11 +253,10 @@ class Checker(QRunnable):
                     if not raw:
                         continue
                     try:
-                        pattern_str = create_pattern(raw)
-                        pattern_re = re.compile(pattern_str, re.IGNORECASE)
+                        pattern = re.compile(create_pattern(raw), re.IGNORECASE)
                     except re.error as e:
                         raise ValueError(f"Ошибка в паттерне исключения '{raw}': {e}")
-                    self.exception_patterns.append(pattern_re)
+                    self.exception_patterns.append(pattern)
         except FileNotFoundError:
             # файл не обязателен
             pass

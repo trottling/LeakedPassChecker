@@ -17,18 +17,20 @@ del /q main.spec 2>nul
   --noconfirm ^
   --noconsole ^
   --clean ^
-  --name "LeakChecker" ^
+  --name "LeakedPassChecker" ^
   --onefile ^
   --icon "assets\icon.ico" ^
-  --add-data "assets\*.*;assets" ^
+  --add-data "assets\*.*;." ^
   main.py
 
 echo.
 echo ==========================
 echo   PyInstaller build done
-echo   dist\LeakChecker.exe
+echo   dist\LeakedPassChecker.exe
 echo ==========================
 echo.
+
+pause
 
 if not exist "dist" (
     echo dist folder missing, nothing to zip
@@ -48,7 +50,7 @@ if exist "%ZIP_PATH%" del "%ZIP_PATH%"
     "test_data_creator.py" ^
     "app" ^
     "assets" ^
-    "dist\LeakChecker.exe"
+    "dist\LeakedPassChecker.exe"
 
 echo.
 echo ==========================
