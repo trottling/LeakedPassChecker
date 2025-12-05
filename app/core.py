@@ -202,8 +202,6 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
         "Message",
         ]
 
-    header_font = Font(bold=True)
-    header_alignment = Alignment(horizontal="center", vertical="center")
     wb = Workbook()
 
     first_sheet_created = False
@@ -221,19 +219,19 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
 
         max_lengths: dict[int, int] = { }
 
-        def update_max(col_idx: int, value) -> None:
+        def update_max(_col_idx: int, value) -> None:
             if value is None:
                 return
             length = len(str(value))
-            prev = max_lengths.get(col_idx, 0)
+            prev = max_lengths.get(_col_idx, 0)
             if length > prev:
-                max_lengths[col_idx] = length
+                max_lengths[_col_idx] = length
 
         # Заголовки
         ws.append(headers)
         for col_idx, cell in enumerate(ws[1], start=1):
-            cell.font = header_font
-            cell.alignment = header_alignment
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal="center", vertical="center")
             update_max(col_idx, cell.value)
 
         current_row = 2
@@ -247,8 +245,6 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
             ws.cell(row=current_row, column=2, value=worker.department)
             ws.cell(row=current_row, column=3, value=worker.tab_number)
 
-            ws.cell(row=current_row, column=1).font = header_font
-
             update_max(1, worker.name)
             update_max(2, worker.department)
             update_max(3, worker.tab_number)
@@ -260,9 +256,9 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
 
                 for login in worker.logins:
                     ws.cell(row=current_row, column=4, value=login.user_name)
-                    ws.cell(row=current_row, column=5, value=login.client_host_name, )
-                    ws.cell(row=current_row, column=6, value=login.logon_time, )
-                    ws.cell(row=current_row, column=7, value=login.event_type_text, )
+                    ws.cell(row=current_row, column=5, value=login.client_host_name)
+                    ws.cell(row=current_row, column=6, value=login.logon_time)
+                    ws.cell(row=current_row, column=7, value=login.event_type_text)
                     ws.cell(row=current_row, column=8, value=login.message)
 
                     update_max(4, login.user_name)

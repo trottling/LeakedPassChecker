@@ -28,7 +28,7 @@ class Login:
 @dataclass
 class Worker:
     department: str
-    fio: str
+    name: str
     tab_number: str
     logins: list[Login]
 
@@ -99,14 +99,17 @@ class Checker(QRunnable):
         all_fios = set(entrances_by_fio.keys()) | set(logins_by_fio.keys())
 
         for fio in all_fios:
+            if len(fio) <= 1:
+                fio = "ОСТАЛЬНЫЕ"
+
             fio_entrances = entrances_by_fio.get(fio, [])
             fio_logins = logins_by_fio.get(fio, [])
 
-            department = fio_entrances[0].department if fio_entrances else ""
-            tab_number = fio_entrances[0].tab_number if fio_entrances else ""
+            department = fio_entrances[0].department if fio_entrances else "-"
+            tab_number = fio_entrances[0].tab_number if fio_entrances else "-"
 
-            worker = Worker(department=department, fio=fio, tab_number=tab_number, logins=fio_logins)
-
+            worker = Worker(department=department, name=fio, tab_number=tab_number, logins=fio_logins)
+            (worker)
             # быстрый чек "уволен" через set
             if fio in self.fired:
                 exceptions.append(worker)
@@ -119,7 +122,7 @@ class Checker(QRunnable):
                 matched.append(worker)
             elif has_login and not has_entrance:
                 # Собираем поля один раз
-                fields_to_check: list[str] = [worker.fio, worker.department, worker.tab_number, ]
+                fields_to_check: list[str] = [worker.name, worker.department, worker.tab_number, ]
                 for login in worker.logins:
                     fields_to_check.extend([login.user_name, login.client_host_name, login.user_display_name, login.user_distinguish_name, ])
 
@@ -170,10 +173,6 @@ class Checker(QRunnable):
         for row in ws.iter_rows(min_row=data_start_row_idx, values_only=True):
             values = list(row[:9])
 
-            # пропуск пустых строк
-            if all(v is None or str(v).strip() == "" for v in values):
-                continue
-
             login = Login(
                 user_name=normalize(values[0]),
                 client_host_name=normalize(values[1]),
@@ -185,6 +184,11 @@ class Checker(QRunnable):
                 user_distinguish_name=normalize(values[7]),
                 )
 
+            # Если ФИО пустое, берём из столбца "user_distinguish_name", до первой запятой
+            if login.user_display_name == "" and login.user_distinguish_name != "":
+                login.user_display_name = login.user_distinguish_name.split(",", 1)[0]
+
+            (login)
             logins.append(login)
 
         return logins
@@ -258,17 +262,20 @@ class Checker(QRunnable):
                         raise ValueError(f"Ошибка в паттерне исключения '{raw}': {e}")
                     self.exception_patterns.append(pattern)
         except FileNotFoundError:
-            # файл не обязателен
             pass
         except Exception as e:
             raise ValueError(f"Ошибка чтения файла с исключениями: {str(e)}")
 
 
 def normalize(value) -> str:
-    return str(value).strip() if value is not None else ""
+    return str(value).strip() if value is not None else "-"
 
 
 def clean_fio(text: str) -> str:
+    # Если есть английские символы / цифры - служебный акк, не ФИО
+    if re.match(r"^[a-zA-Z0-9]+$", text):
+        return text
+
     # Ё -> Е
     text = text.replace("Ё", "Е")
     text = text.replace("ё", "е")
