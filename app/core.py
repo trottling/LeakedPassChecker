@@ -274,9 +274,7 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
                     current_row += 1
 
                 # группируем строки входов
-                ws.row_dimensions.group(
-                    start_child_row, current_row - 1, outline_level=1, hidden=True
-                    )
+                ws.row_dimensions.group(start_child_row, current_row - 1, outline_level=1, hidden=True)
 
         # авто ширина на основе уже посчитанных max_lengths
         for col_idx, max_len in max_lengths.items():
