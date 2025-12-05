@@ -238,15 +238,18 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
 
         current_row = 2
 
+        # Сортируем работников по ФИО
+        workers.sort(key=lambda _worker: _worker.name)
+
         for worker in workers:
             # строка сотрудника
-            ws.cell(row=current_row, column=1, value=worker.fio)
+            ws.cell(row=current_row, column=1, value=worker.name)
             ws.cell(row=current_row, column=2, value=worker.department)
             ws.cell(row=current_row, column=3, value=worker.tab_number)
 
             ws.cell(row=current_row, column=1).font = header_font
 
-            update_max(1, worker.fio)
+            update_max(1, worker.name)
             update_max(2, worker.department)
             update_max(3, worker.tab_number)
 
