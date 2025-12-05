@@ -275,7 +275,7 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
                     start_child_row, current_row - 1, outline_level=1, hidden=True
                     )
 
-        # автоширина на основе уже посчитанных max_lengths
+        # авто ширина на основе уже посчитанных max_lengths
         for col_idx, max_len in max_lengths.items():
             column_letter = ws.cell(row=1, column=col_idx).column_letter
             ws.column_dimensions[column_letter].width = min(70, max(12, max_len + 10))
@@ -286,15 +286,3 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
         ws.append(["Нет данных для экспорта"])
 
     wb.save(path)
-
-
-# autosize оставил, вдруг пригодится в другом месте
-def autosize(ws) -> None:
-    for column_cells in ws.columns:
-        column_letter = column_cells[0].column_letter
-        max_length = 0
-        for cell in column_cells:
-            if cell.value is None:
-                continue
-            max_length = max(max_length, len(str(cell.value)))
-        ws.column_dimensions[column_letter].width = min(70, max(12, max_length + 10))
