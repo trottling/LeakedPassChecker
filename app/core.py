@@ -217,6 +217,9 @@ def export_to_excel(result: CheckerResult, path: str) -> None:
         else:
             ws = wb.create_sheet(title=title)
 
+        ws.sheet_properties.outlinePr.summaryBelow = False
+        ws.sheet_properties.outlinePr.showOutlineSymbols = True
+
         max_lengths: dict[int, int] = { }
 
         def update_max(_col_idx: int, value) -> None:
