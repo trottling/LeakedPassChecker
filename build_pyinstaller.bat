@@ -30,8 +30,6 @@ echo   dist\LeakedPassChecker.exe
 echo ==========================
 echo.
 
-pause
-
 if not exist "dist" (
     echo dist folder missing, nothing to zip
     pause
