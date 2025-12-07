@@ -109,7 +109,7 @@ class Checker(QRunnable):
             tab_number = fio_entrances[0].tab_number if fio_entrances else "-"
 
             worker = Worker(department=department, name=fio, tab_number=tab_number, logins=fio_logins)
-            (worker)
+
             # быстрый чек "уволен" через set
             if fio in self.fired:
                 exceptions.append(worker)
@@ -122,9 +122,9 @@ class Checker(QRunnable):
                 matched.append(worker)
             elif has_login and not has_entrance:
                 # Собираем поля один раз
-                fields_to_check: list[str] = [worker.name, worker.department, worker.tab_number, ]
+                fields_to_check: list[str] = [worker.name, worker.department, worker.tab_number]
                 for login in worker.logins:
-                    fields_to_check.extend([login.user_name, login.client_host_name, login.user_display_name, login.user_distinguish_name, ])
+                    fields_to_check.extend([login.user_name, login.client_host_name, login.user_display_name, login.user_distinguish_name])
 
                 is_exception = False
                 for pattern in self.exception_patterns:
@@ -139,10 +139,10 @@ class Checker(QRunnable):
             elif has_entrance and not has_login:
                 no_login.append(worker)
 
-        return CheckerResult(compromised=compromised, matched=matched, no_login=no_login, exceptions=exceptions, )
+        return CheckerResult(compromised=compromised, matched=matched, no_login=no_login, exceptions=exceptions)
 
     def load_logins(self) -> list[Login]:
-        wb = load_workbook(self.config.logins_table_path, data_only=True, read_only=True, )
+        wb = load_workbook(self.config.logins_table_path, data_only=True, read_only=True)
         ws = wb.active
 
         expected_headers = [
@@ -185,10 +185,9 @@ class Checker(QRunnable):
                 )
 
             # Если ФИО пустое, берём из столбца "user_distinguish_name", до первой запятой
-            if login.user_display_name == "" and login.user_distinguish_name != "":
+            if login.user_display_name == "":
                 login.user_display_name = login.user_distinguish_name.split(",", 1)[0]
 
-            (login)
             logins.append(login)
 
         return logins
@@ -229,14 +228,14 @@ class Checker(QRunnable):
             if not department and not fio and not tab_number:
                 continue
 
-            entrances.append(Entrance(department=department, fio=fio, tab_number=tab_number, ))
+            entrances.append(Entrance(department=department, fio=fio, tab_number=tab_number))
 
         return entrances
 
     def load_lists(self) -> None:
         # ФИО уволенных
         try:
-            with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore", ) as f:
+            with open(self.config.fired_list_path, "r", encoding="utf-8", errors="ignore") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -253,14 +252,17 @@ class Checker(QRunnable):
             with open(self.config.exceptions_list_path, "r", encoding="utf-8", errors="ignore", ) as f:
                 self.exception_patterns = []
                 for line in f:
+
                     raw = line.strip()
                     if not raw:
                         continue
+
                     try:
                         pattern = re.compile(create_pattern(raw), re.IGNORECASE)
                     except re.error as e:
                         raise ValueError(f"Ошибка в паттерне исключения '{raw}': {e}")
                     self.exception_patterns.append(pattern)
+
         except FileNotFoundError:
             pass
         except Exception as e:

@@ -63,7 +63,7 @@ def select_fired_list(self):
 
 
 def select_exception_list(self):
-    file_path = select_file(self, "Выберите TXT файл", "Text Files (*.txt);;Все файлы (*.*)", )
+    file_path = select_file(self, "Выберите TXT файл", "Text Files (*.txt);;Все файлы (*.*)")
     if not file_path:
         return
     self.ui.lineEdit_exceptions.setText(file_path)
@@ -98,7 +98,7 @@ def run_checker(self):
         return
 
     if not logins_table_path:
-        warn_user(self, "Заполните все поля", "Путь к журналу входов в систему пустой", )
+        warn_user(self, "Заполните все поля", "Путь к журналу входов в систему пустой")
         return
 
     if entrances_table_path == logins_table_path:
@@ -110,15 +110,15 @@ def run_checker(self):
         return
 
     if not os.path.isfile(logins_table_path):
-        warn_user(self, "Файл не найден", "Неправильный путь к журналу входов в систему", )
+        warn_user(self, "Файл не найден", "Неправильный путь к журналу входов в систему")
         return
 
     if exceptions_list_path and not os.path.isfile(exceptions_list_path):
-        warn_user(self, "Файл не найден", "Неправильный путь к списку исключений", )
+        warn_user(self, "Файл не найден", "Неправильный путь к списку исключений")
         return
 
     if fired_list_path and not os.path.isfile(fired_list_path):
-        warn_user(self, "Файл не найден", "Неправильный путь к списку уволенных", )
+        warn_user(self, "Файл не найден", "Неправильный путь к списку уволенных")
         return
 
     inactive_ui(self)
@@ -172,7 +172,7 @@ def export_result(self):
         warn_user(self, "Нет результатов", "Нет результатов для выгрузки")
         return
 
-    file_path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл как...", "result.xlsx", "Excel Files (*.xlsx *.xls);;Все файлы (*.*)", )
+    file_path, _ = QFileDialog.getSaveFileName(self, "Сохранить файл как...", "result.xlsx", "Excel Files (*.xlsx *.xls);;Все файлы (*.*)")
 
     if not file_path:
         return
