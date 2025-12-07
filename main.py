@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication
 from app.app import App
 from app.core import warn_user
 
-VERSION = "0.3.4"
+VERSION = "0.3.5"
 
 def main():
     try:
