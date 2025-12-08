@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0"
 
 set PYTHON=.venv\Scripts\python.exe
-set ZIP_NAME=LeakChecker.zip
+set ZIP_NAME=LeakedPassChecker.zip
 set ZIP_PATH=dist\%ZIP_NAME%
 
 "%PYTHON%" -m pip install -r requirements.txt
