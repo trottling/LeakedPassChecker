@@ -82,9 +82,8 @@ jobs:
           $event = Get-Content $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
           $lines = @()
 
-          $lines += "Build: ${{ steps.version.outputs.name }}"
-          $lines += "Commit (after): $env:GITHUB_SHA"
-          $lines += "Branch: $env:GITHUB_REF_NAME"
+          $lines += "🛠 **Build**: **${{ steps.version.outputs.name }}**"
+          $lines += "🔗 **Commit**: **$env:GITHUB_SHA**"
           $lines += ""
 
           if ($env:GITHUB_EVENT_NAME -eq "push" -and $null -ne $event.commits -and $event.commits.Count -gt 0) {
@@ -93,12 +92,12 @@ jobs:
               $sha = $commit.id.Substring(0, 7)
               $title = ($commit.message -split "`r?`n")[0]
               $commitUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/commit/$($commit.id)"
-              $lines += "- [`$sha`]($commitUrl) $title"
+              $lines += "📍 [$sha]($commitUrl) $title"
             }
 
             if ($null -ne $event.compare -and $event.compare -ne "") {
               $lines += ""
-              $lines += "Compare: $($event.compare)"
+              $lines += "📝 **Compare**: **$($event.compare)**"
             }
           }
           else {
@@ -106,15 +105,9 @@ jobs:
             $shortSha = git rev-parse --short HEAD
             $commitUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
 
-            $lines += "Commit:"
-            $lines += "- [`$shortSha`]($commitUrl) $message"
+            $lines += "📝 **Commit**:"
+            $lines += "📍 [`$shortSha`]($commitUrl) $message"
           }
-
-          $lines += ""
-          $lines += "Built with Nuitka:"
-          $lines += "- --onefile"
-          $lines += "- --lto=yes"
-          $lines += "- --onefile-no-compression"
 
           $lines -join "`r`n" | Set-Content -Path release_body.txt -Encoding utf8
 
