@@ -3,7 +3,8 @@ name: Build and Release Windows EXE
 on:
   push:
     branches:
-      - "**"
+      - main
+      - master
     paths:
       - "**/*.py"
       - "assets/**"
