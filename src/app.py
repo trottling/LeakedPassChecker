@@ -5,8 +5,8 @@ from PyQt6.QtCore import QSettings
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QFileDialog, QMainWindow
 
-from app.checker import Checker, CheckerConfig, CheckerResult
-from app.utils import export_to_excel, get_rel_path, select_file, warn_user
+from checker import Checker, CheckerConfig, CheckerResult
+from utils import export_to_excel, get_rel_path, select_file, warn_user
 
 
 class App(QMainWindow):
