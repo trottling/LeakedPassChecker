@@ -93,7 +93,7 @@ jobs:
             $shortSha = git rev-parse --short HEAD
             $commitUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/commit/$env:GITHUB_SHA"
             $lines += "📝 **Commit**:"
-            $lines += "📍 [`$shortSha`]($commitUrl) $message"
+            $lines += "📍 [$shortSha]($commitUrl) $message"
           }
 
           $lines -join "`r`n" | Set-Content -Path release_body.txt -Encoding utf8
