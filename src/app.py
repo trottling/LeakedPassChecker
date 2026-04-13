@@ -88,7 +88,7 @@ class App(QMainWindow):
         self.ui.lineEdit_exceptions.setText(file_path)
 
     def inactive_ui(self):
-        self.setCursor(QtCore.Qt.CursorShape.WaitCursor)
+        self.ui.setCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.ui.pushButton_check.setText("Проверка")
         self.ui.pushButton_check.setEnabled(False)
         self.ui.pushButton_check.setIcon(QtGui.QIcon(get_rel_path("loading.png")))
@@ -96,7 +96,7 @@ class App(QMainWindow):
         self.ui.pushButton_save.setEnabled(False)
 
     def active_ui(self):
-        self.unsetCursor()
+        self.ui.unsetCursor()
         self.ui.pushButton_check.setText("Начать поиск")
         self.ui.pushButton_check.setEnabled(True)
         self.ui.pushButton_check.setIcon(QtGui.QIcon(get_rel_path("start.png")))
