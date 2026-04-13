@@ -22,7 +22,7 @@ class App(QMainWindow):
         self.ui = QUiLoader().load(get_rel_path("main.ui"))
         version = load_app_version()
         suffix = f" v{version}" if version else ""
-        self.ui.setWindowTitle(f"Поиск утекших паролей{suffix}")
+        self.ui.setWindowTitle(f"Поиск утекших паролей {suffix}")
         self.ui.setWindowIcon(QIcon(get_rel_path("icon.ico")))
 
         # Иконки
