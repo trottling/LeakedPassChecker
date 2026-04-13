@@ -1,11 +1,11 @@
 import os
 import sys
 
-from PyQt6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 
-from app.checker import CheckerResult
+from src.checker import CheckerResult
 
 
 def warn_user(parent, title: str, text: str) -> None:
@@ -16,6 +16,12 @@ def warn_user(parent, title: str, text: str) -> None:
     msg.setStandardButtons(QMessageBox.StandardButton.Ok)
     msg.resize(500, 300)
     msg.exec()
+
+
+def load_app_version() -> str:
+    with open(get_rel_path("version.txt"), "r") as f:
+        v = f.readline().strip()
+        return v if v else ""
 
 
 def select_file(parent, title: str, filter_str: str) -> str:

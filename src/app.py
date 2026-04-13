@@ -1,16 +1,17 @@
 import os
 
-from PyQt6 import QtCore, QtGui, uic
-from PyQt6.QtCore import QSettings
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QFileDialog, QMainWindow
+from PySide6 import QtCore, QtGui
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QIcon
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QFileDialog, QMainWindow
 
-from checker import Checker, CheckerConfig, CheckerResult
-from utils import export_to_excel, get_rel_path, select_file, warn_user
+from src.checker import Checker, CheckerConfig, CheckerResult
+from src.utils import export_to_excel, get_rel_path, load_app_version, select_file, warn_user
 
 
 class App(QMainWindow):
-    def __init__(self, version: str):
+    def __init__(self):
         super().__init__()
         self.ui = None
         self.scan_result = None
@@ -18,8 +19,9 @@ class App(QMainWindow):
         self.load_ui()
 
     def load_ui(self):
-        self.ui = uic.loadUi(get_rel_path("main.ui"), self)
-        self.ui.setWindowTitle(f"Поиск утекших паролей")
+        self.ui = QUiLoader().load(get_rel_path("main.ui"), self)
+        version = load_app_version()
+        self.ui.setWindowTitle(f"Поиск утекших паролей {"v" + version if version else ""}")
         self.ui.setWindowIcon(QIcon(get_rel_path("icon.ico")))
 
         # Иконки

@@ -2,7 +2,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 
-from PyQt6.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 from openpyxl import load_workbook
 
 _LATIN_DIGITS_RE = re.compile(r"^[a-zA-Z0-9]+$")
@@ -54,9 +54,9 @@ class CheckerResult:
 
 
 class CheckerSignals(QObject):
-    finished = pyqtSignal()
-    error = pyqtSignal(str)
-    result = pyqtSignal(object)
+    finished = Signal()
+    error = Signal(str)
+    result = Signal(object)
 
     def __init__(self):
         super().__init__()
@@ -90,7 +90,7 @@ class Checker(QRunnable):
         self.fired: set[str] = set()
         self.signals = CheckerSignals()
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         try:
             result = self.execute()

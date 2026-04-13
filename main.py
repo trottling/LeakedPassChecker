@@ -1,9 +1,8 @@
 import sys
 
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 from src.app import App
-from src.utils import warn_user
 
 
 def main():
